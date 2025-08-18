@@ -12,6 +12,8 @@ using Firebase.Storage;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using UnityEngine.SceneManagement;
+
 
 namespace FireBase
 {
@@ -20,14 +22,18 @@ namespace FireBase
     public class Firebase_Manager : MonoBehaviour
     {
         public static Firebase_Manager instance { get; private set; }
+        // Game1_Manager _game_Manager;
+        // public Game1_Manager game_Manager
+        // {
+        //     get
+        //     {
+        //         if (_game_Manager == null)
+        //             _game_Manager = FindObjectOfType<Game1_Manager>();
+        //         return _game_Manager;
+        //     }
+        // }
 
-
-        [Header("Firebase")]
         DependencyStatus dependencyStatus = DependencyStatus.UnavailableOther;
-        FirebaseAuth auth;
-        FirebaseUser fuser;
-
-        [Header("Firebase Storage")]
         // TIP: leave MyStorageBucket without trailing slash; we normalize when joining.
         protected string MyStorageBucket = "gs://powerup-pool-22df2.appspot.com"; // FIX: typical bucket suffix is appspot.com
         protected string MyDatabaseUrl = "https://powerup-pool-22df2-default-rtdb.europe-west1.firebasedatabase.app"; // FIX: typical bucket suffix is appspot.com
@@ -41,7 +47,7 @@ namespace FireBase
         protected string editableFileContents;
         protected string fileMetadata = "";
         protected string localFilename;
-        protected bool isFirebaseInitialized = false;
+        public bool isFirebaseInitialized = false;
         protected FirebaseStorage storage;
         protected Firebase.LogLevel logLevel = Firebase.LogLevel.Info;
         protected bool operationInProgress;
@@ -78,11 +84,12 @@ namespace FireBase
 
         void Update() { }
 
+        #region ** Firebase Auth **
+        #endregion
+
         #region Initialize
         void InitializeFirebase()
         {
-            auth = FirebaseAuth.DefaultInstance;
-
             // Initialize Storage
             var appBucket = FirebaseApp.DefaultInstance?.Options?.StorageBucket;
             storage = FirebaseStorage.DefaultInstance;
@@ -136,15 +143,23 @@ namespace FireBase
             Debug.Log("Getting user data...");
             FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
             DocumentReference docRef = db.Collection(collectionId).Document(documentId);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-            if (snapshot.Exists)
+            try
             {
-                Dictionary<string, object> documentData = snapshot.ToDictionary();
-                return documentData;
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+                if (snapshot.Exists)
+                {
+                    Dictionary<string, object> documentData = snapshot.ToDictionary();
+                    return documentData;
+                }
+                else
+                {
+                    Debug.Log("Error : User data not found.");
+                    return null;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.Log("Error : User data not found.");
+                Debug.LogError("Firestore Exception: " + ex.Message);
                 return null;
             }
         }
@@ -160,27 +175,35 @@ namespace FireBase
             }
 
             Debug.Log($"Getting data from {collectionId}/{documentId}, field: {path}");
-            FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
-            DocumentReference docRef = db.Collection(collectionId).Document(documentId);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-            if (snapshot.Exists)
+            try
             {
-                if (snapshot.ContainsField(path))
+                FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
+                DocumentReference docRef = db.Collection(collectionId).Document(documentId);
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
                 {
-                    object value = snapshot.GetValue<object>(path);
-                    Debug.Log($"Field '{path}' value: {value}");
-                    return value;
+                    if (snapshot.ContainsField(path))
+                    {
+                        object value = snapshot.GetValue<object>(path);
+                        Debug.Log($"Field '{path}' value: {value}");
+                        return value;
+                    }
+                    else
+                    {
+                        Debug.Log($"Error : Field '{path}' not found in document.");
+                        return null;
+                    }
                 }
                 else
                 {
-                    Debug.Log($"Error : Field '{path}' not found in document.");
+                    Debug.Log("Error : Document not found.");
                     return null;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.Log("Error : Document not found.");
+                Debug.LogError($"Firestore Exception in Get_SpecificDataFromFirebase: {ex.Message}");
                 return null;
             }
         }
@@ -196,27 +219,35 @@ namespace FireBase
             }
 
             Debug.Log($"Getting data from {collectionId}/{documentId}, field: {path}");
-            FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
-            DocumentReference docRef = db.Collection(collectionId).Document(documentId);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-
-            if (snapshot.Exists)
+            try
             {
-                if (snapshot.ContainsField(path))
+                FirebaseFirestore db = FirebaseFirestore.DefaultInstance;
+                DocumentReference docRef = db.Collection(collectionId).Document(documentId);
+                DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+
+                if (snapshot.Exists)
                 {
-                    object value = snapshot.GetValue<object>(path);
-                    Debug.Log($"Field '{path}' value: {value}");
-                    return new Dictionary<string, object> { { path, value } };
+                    if (snapshot.ContainsField(path))
+                    {
+                        object value = snapshot.GetValue<object>(path);
+                        Debug.Log($"Field '{path}' value: {value}");
+                        return new Dictionary<string, object> { { path, value } };
+                    }
+                    else
+                    {
+                        Debug.Log($"Error : Field '{path}' not found in document.");
+                        return null;
+                    }
                 }
                 else
                 {
-                    Debug.Log($"Error : Field '{path}' not found in document.");
+                    Debug.Log("Error : Document not found.");
                     return null;
                 }
             }
-            else
+            catch (Exception ex)
             {
-                Debug.Log("Error : Document not found.");
+                Debug.LogError($"Firestore Exception in Get_SpecificDataDictionary: {ex.Message}");
                 return null;
             }
         }

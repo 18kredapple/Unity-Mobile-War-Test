@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Data_Type;
+using RenderHeads.Media.AVProVideo;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,6 +18,8 @@ public class Game1_QA_Panel : MonoBehaviour
             return _game1_Manager;
         }
     }
+    
+    [SerializeField] DisplayUGUI[] videoDisplayArray;
     [SerializeField] Image videoMaskImg;
     [SerializeField] Image platformImg;
     [SerializeField] TextMeshProUGUI questionTxt;
@@ -26,15 +29,13 @@ public class Game1_QA_Panel : MonoBehaviour
     [SerializeField] Game1_Cloud topCloud;
     [SerializeField] Game1_Cloud bottomCloud;
 
-    int qaIndex;
-    int currentAnswerIndex;
-    int correctAnswerIndex;
+    Game1_QA qa;
+
+    int currentAnswerIndex = -1;
 
     // Start is called before the first frame update
     void Start()
     {
-        currentAnswerIndex = -1;
-        correctAnswerIndex = -2;
         answerBtn.interactable = false;
         videoMaskImg.sprite = Resource_Manager.instance.game1_qaVideoMaskSptArray[0];
         platformImg.sprite = Resource_Manager.instance.game1_stageSptArray[0];
@@ -48,10 +49,8 @@ public class Game1_QA_Panel : MonoBehaviour
 
     public void Set_QA_Panel(int index, Game1_QA qa)
     {
-        qaIndex = index;
         questionTxt.text = qa.question;
-        correctAnswerIndex = qa.correctAnswerIndex;
-        Debug.Log($"Correct Answer Index: {correctAnswerIndex}");
+        this.qa = qa;
 
         if (qa.answers.Length > answerTxtArray.Length)
         {
@@ -72,7 +71,7 @@ public class Game1_QA_Panel : MonoBehaviour
     public void OnAnswerTileBtn_clicked(int index)
     {
         Debug.Log($"Answer Button {index} Clicked");
-        if (index == correctAnswerIndex)
+        if (index == qa.correctAnswerIndex)
             Debug.Log("Correct Answer!");
         else
             Debug.Log("Wrong Answer!");
@@ -80,18 +79,35 @@ public class Game1_QA_Panel : MonoBehaviour
         currentAnswerIndex = index;
         videoMaskImg.sprite = Resource_Manager.instance.game1_qaVideoMaskSptArray[index + 1];
         answerBtn.interactable = true;
+
         for (int i = 0; i < answerTileBtnArray.Length; i++)
         {
             if (i != index)
-                answerTileBtnArray[i].interactable = false;
-            else
                 answerTileBtnArray[i].interactable = true;
+            else
+                answerTileBtnArray[i].interactable = false;
+        }
+
+        for (int i = 0; i < answerTxtArray.Length; i++)
+        {
+            if (i != index)
+                answerTxtArray[i].color = Color.black;
+            else
+                answerTxtArray[i].color = Color.white;
+        }
+
+        for (int i = 0; i < videoDisplayArray.Length; i++)
+        {
+            if (i == index)
+                videoDisplayArray[i].gameObject.SetActive(true);
+            else
+                videoDisplayArray[i].gameObject.SetActive(false);
         }
     }
 
     public void OnAnswerBtn_clicked()
     {
-        if (correctAnswerIndex == currentAnswerIndex)
+        if (qa.correctAnswerIndex == currentAnswerIndex)
         {
             Debug.Log("Correct Answer!");
             // Handle correct answer logic here

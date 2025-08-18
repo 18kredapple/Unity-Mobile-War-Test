@@ -11,13 +11,6 @@ namespace Data_Type
         public string[] answers;
         public int correctAnswerIndex;
 
-        public Game1_QA(string q, string[] a, int correctIndex)
-        {
-            question = q;
-            answers = a;
-            correctAnswerIndex = correctIndex;
-        }
-
         public Game1_QA(string[] a)
         {
             if (a == null || a.Length < 4)

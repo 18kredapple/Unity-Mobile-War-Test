@@ -5,6 +5,7 @@ using FireBase;
 using Data_Type;
 using System.Threading.Tasks;
 using System;
+using System.Linq;
 
 public class Data_Manager : MonoBehaviour
 {
@@ -36,6 +37,14 @@ public class Data_Manager : MonoBehaviour
     {
 
     }
+    
+    public List<Game1_QA> game1_QA_List{ get; private set; } 
+
+    public async Task Initialize()
+    {
+        // Any initialization code if needed
+        game1_QA_List = await game1_QAList(1);
+    }
 
     #region Game 1
     public int game1QACount = 3; // Number of Q&A pairs to fetch
@@ -47,12 +56,13 @@ public class Data_Manager : MonoBehaviour
 
         Dictionary<string, object> data = await Firebase_Manager.instance.Get_Document("Game 1 QA", docId);
 
-        foreach (object qa in data)
+        foreach (KeyValuePair<string, object> qa in data)
         {
-            String[] qaData = (string[])qa;
-            if (qaData.Length >= 4)
+            List<string> qaData = ((List<object>)qa.Value).Select(obj => obj.ToString()).ToList();
+            
+            if (qaData.Count >= 4)
             {
-                Game1_QA game1QA = new Game1_QA(qaData);
+                Game1_QA game1QA = new Game1_QA(qaData.ToArray());
                 qaList.Add(game1QA);
             }
             else
@@ -60,7 +70,7 @@ public class Data_Manager : MonoBehaviour
                 Debug.LogError($"Invalid Q&A data for Level {Level}: {string.Join(", ", qaData)}");
             }
         }
-        return null;
+        return qaList;
     }
     #endregion
 }
