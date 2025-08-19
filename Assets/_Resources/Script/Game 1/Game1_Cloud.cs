@@ -6,13 +6,13 @@ using UnityEngine.UI;
 
 public class Game1_Cloud : MonoBehaviour
 {
-    public CloudType type;
+    public CLOUD_TYPE type;
     [SerializeField] Image cloudImg { get; set; }
     // Start is called before the first frame update
     void Start()
     {
         cloudImg = GetComponent<Image>();
-        cloudImg.sprite = type == CloudType.Top
+        cloudImg.sprite = type == CLOUD_TYPE.Top
             ? Resource_Manager.instance.game1_topCloudSptArray[0]
             : Resource_Manager.instance.game1_bottomCloudSptArray[0];
     }
@@ -30,8 +30,8 @@ public class Game1_Cloud : MonoBehaviour
 
     IEnumerator Disappear_Animation()
     {
-        float duration = 1f; // Total animation duration in seconds
-        Sprite[] spriteArray = type == CloudType.Top
+        float duration = 2.5f; // Total animation duration in seconds
+        Sprite[] spriteArray = type == CLOUD_TYPE.Top
             ? Resource_Manager.instance.game1_topCloudSptArray
             : Resource_Manager.instance.game1_bottomCloudSptArray;
 
@@ -51,5 +51,6 @@ public class Game1_Cloud : MonoBehaviour
                 yield return null;
             }
         }
+        cloudImg.color = new Color(cloudImg.color.r, cloudImg.color.g, cloudImg.color.b, 0f);
     }
 }

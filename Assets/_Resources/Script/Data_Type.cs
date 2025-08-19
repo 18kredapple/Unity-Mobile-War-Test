@@ -42,6 +42,8 @@ namespace Data_Type
         }
     }
 
-    public enum CloudType { Top, Bottom }
+    public enum CLOUD_TYPE { Top, Bottom }
+    public enum GAME1_MAN_MOVE_DIRECTION { NONE, CL, CR, LC, LR, RC, RL }
+    public enum ANSWER_TILE {LEFT, CENTER, RIGHT }
     #endregion
 }
